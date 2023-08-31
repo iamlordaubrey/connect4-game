@@ -12,13 +12,17 @@ import os
 from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
 
-from player.playerauth import PlayerAuthMiddleware
+from game import routing
+from game.middleware import TokenAuthMiddleware
+# from player.playerauth import PlayerTokenAuthMiddleware
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 
 application = ProtocolTypeRouter({
     'http': get_asgi_application(),
-    # 'websocket': PlayerAuthMiddleware(
-    #     URLRouter()
-    # )
+    'websocket': TokenAuthMiddleware(
+        URLRouter(
+            routing.websocket_urlpatterns
+        )
+    )
 })

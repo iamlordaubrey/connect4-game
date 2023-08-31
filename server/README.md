@@ -1,5 +1,10 @@
 # Connect4 Backend
 
+Note: 
+- Group == Room == Game
+- Channel == Player
+
+
 ### Application flowchart
 - Create a player
   - Creates a player if not existing
@@ -9,3 +14,11 @@
     - Show a waiting for more players to join loader
   - if a game room exists with 1 player, join that room (add player to that game)
     - Start game for all players in the room (start game for the 2 players)
+
+### Gameplay flowchart
+- 
+
+### Run tests
+```commandline
+python -m pytest
+```
