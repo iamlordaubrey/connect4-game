@@ -15,18 +15,12 @@ class GameRoomSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def create(self, validated_data):
-        print('in serializer create game method')
-        print('context should have player-id', self.context)
-        # request_object = self.context['request']
-        # print('dir request', dir(request_object))
         player_id = self.context['player-id']
-        # player_id = self.context['request']['headers'].get('player-id')
         player = Player.objects.get(id=player_id)
         if not player:
             raise serializers.ValidationError('Player not found')
 
         game = Game.objects.annotate(players_count=Count('players')).filter(players_count=1, started=False).first()
-
         if game:
             game.started = True
             game.save()

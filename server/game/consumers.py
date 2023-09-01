@@ -1,7 +1,5 @@
-import json
-
-from channels.generic.websocket import AsyncWebsocketConsumer, AsyncJsonWebsocketConsumer, JsonWebsocketConsumer
 from channels.db import database_sync_to_async
+from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 from game.models import Game
 
@@ -13,19 +11,12 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
 
     @database_sync_to_async
     def _get_game_id(self, player):
-
-        print('All games', Game.objects.all())
         return Game.objects.filter(players__id=player.id).first()
 
     async def connect(self):
-        print('bawo ni??', self.scope)
         player = self.scope['player']
-        print('player in connect: ', player)
-
         if player is None:
             await self.close()
-
-        print('player.id', player.id)
 
         game = await self._get_game_id(player)
         if game is None:
@@ -43,6 +34,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             })
         except Exception as e:
             print('an error occurred: ', e)
+            raise
 
         await self.accept()
 
@@ -51,32 +43,19 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
 
     async def receive_json(self, content, **kwargs):
         message_type = content.get('type')
-        if message_type == 'echo.message':
-            # await self.echo_message(content)
-            await self.send_json(content)
-        elif message_type == 'room.created':
+
+        if message_type == 'room.created':
             await self.room_created(content)
         elif message_type == 'room.joined':
             await self.room_joined(content)
-
-    async def echo_message(self, message):
-        await self.send_json(message)
+        elif message_type == 'echo.message':
+            await self.send_json(content)
 
     async def room_created(self, message):
         await self.send_json(message)
-        # message = event['text']
-        # await self.send_json({
-        #     'type': 'room.created',
-        #     'text': message,
-        # })
 
     async def room_joined(self, message):
-        room = f'room_{message.get("type")}'
-        await self.channel_layer.group_send(
-            group=room,
-            channel=self.channel_name,
-        )
-        # await self.send_json({
-        #     'type': message.get('type'),
-        #     'data': message.get('data'),
-        # })
+        await self.send_json(message)
+
+    async def echo_message(self, message):
+        await self.send_json(message)
