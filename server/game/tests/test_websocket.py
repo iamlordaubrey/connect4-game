@@ -60,7 +60,7 @@ class TestWebSocket:
 
         communicator = WebsocketCommunicator(
             application=application,
-            path='/game/?player-id={str(access)}'
+            path=f'/game/?player-id={str(access)}'
         )
         connected, _ = await communicator.connect()
         message = {
@@ -80,7 +80,7 @@ class TestWebSocket:
 
         communicator = WebsocketCommunicator(
             application=application,
-            path='/game/?player-id={str(access)}'
+            path=f'/game/?player-id={str(access)}'
         )
         connected, _ = await communicator.connect()
         message = {

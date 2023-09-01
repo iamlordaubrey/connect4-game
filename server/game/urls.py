@@ -1,7 +1,7 @@
 from django.urls import path
 
-from game.views import JoinView
+from game.views import JoinRoomView
 
 urlpatterns = [
-    path('join/', JoinView.as_view()),
+    path('join/', JoinRoomView.as_view(), name='join_room'),
 ]
