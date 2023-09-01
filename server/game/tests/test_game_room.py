@@ -5,7 +5,7 @@ from channels.testing import WebsocketCommunicator
 from core.asgi import application
 from rest_framework import status
 from rest_framework.reverse import reverse
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APITransactionTestCase
 
 from game.models import Game
 from player.models import Player
@@ -15,11 +15,11 @@ from player.models import Player
 # @pytest.mark.django_db(transaction=True)
 def create_player(username):
     print('in create player func')
-    player = Player.objects.create(
+    return Player.objects.create(
         username=username
     )
-    access = player.id
-    return player, access
+    # access = player.id
+    # return player
 
 
 TEST_CHANNEL_LAYERS = {
@@ -33,7 +33,7 @@ class TestGameRoom(APITestCase):
     def test_first_player_joins_game_room_creates_room(self):
         print('about to run..')
         # settings.CHANNEL_LAYERS = TEST_CHANNEL_LAYERS
-        _, access = create_player('test.user@example.com')
+        player = create_player('test.user@example.com')
         #
         # communicator = WebsocketCommunicator(
         #     application=application,
@@ -41,7 +41,7 @@ class TestGameRoom(APITestCase):
         # )
         # connected, _ = await communicator.connect()
 
-        response = self.client.post(reverse('join_room'), **{'HTTP_player-id': access})
+        response = self.client.post(reverse('join_room'), **{'HTTP_player-id': player.id})
         print('response: ', response)
         player = Player.objects.last()
         print('player: ', player)
@@ -86,24 +86,56 @@ class TestGameRoom(APITestCase):
         # game_room2 = Game.objects.create()
         game_rooms_queryset2 = Game.objects.all()
         # game_room2.players.add(player2)
-        print('g1, g2', game_room1, game_room2)
+        print('g1', game_room1, 'g2', game_room2)
+        print('g1.started', game_room1.started, 'g2.started', game_room2['started'])
 
         self.assertEqual(len(game_rooms_queryset2), 1)
         self.assertEqual(str(game_room1.id), game_room2['id'])
-        self.assertEqual(game_room1.started, True)
+        self.assertEqual(game_room2['started'], True)
 
 
-# class TestPlayerTest2(APITestCase):
-#     def test_user_can_create_player(self):
-#         print('yahoo!')
-#         self.assertEqual(1+2, 7)
-#         # username = 'test_player'
-#         # response = self.client.post(reverse('create_player'), data={
-#         #     'username': username
-#         # })
-#         # player = Player.objects.last()
-#         # self.assertEqual(status.HTTP_201_CREATED, response.status_code)
-#         # self.assertEqual(response.data['id'], str(player.id))
-#         # self.assertEqual(response.data['username'], player.username)
-#         # self.assertEqual(response.data['wins'], player.wins)
-#         # self.assertEqual(response.data['losses'], player.losses)
+from asgiref.sync import sync_to_async
+from django.test import Client
+
+
+@pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
+class TestJoiningGameRoomCreatesWebsocketConnection(APITransactionTestCase):
+    # @database_sync_to_async
+    # def create_guy(self, user):
+    #     return Player.objects.create(username=user)
+
+    def join_room(self, access_token):
+        client = Client()
+        return client.post(reverse('join_room'), **{'HTTP_player-id': access_token})
+
+    # @sync_to_async
+    # def create_player_and_join_room(self):
+    #     player, access = create_player(username='test_user_1')
+    #     response = client.post(reverse('join_room'), **{'HTTP_player-id': access})
+    #
+    #     print('response: ', response)
+    #     return player, access, response.data
+
+    async def test_player1_creates_room_and_receives_broadcast_message(self):
+        # player0 = await self.create_guy('username')
+        player = await database_sync_to_async(create_player)('test_user_0')
+        response = await sync_to_async(self.join_room)(player.id)
+        game = response.data
+
+        communicator = WebsocketCommunicator(
+            application=application,
+            path=f'/game/?player-id={str(player.id)}'
+        )
+        connected, _ = await communicator.connect()
+        assert connected is True
+
+        message = {
+            'type': 'room.created',
+            'text': 'Game room created',
+        }
+
+        response = await communicator.receive_json_from()
+        print('response from receive', response)
+        assert response == message
+        await communicator.disconnect()

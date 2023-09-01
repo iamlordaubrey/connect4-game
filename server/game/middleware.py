@@ -39,7 +39,7 @@ class TokenAuthMiddleware:
             return await self.app(scope, receive, send)
 
         try:
-            player = get_player(token)
+            player = await get_player(token)
         except Exception as exception:
             scope['player'] = None
             return await self.app(scope, receive, send)
