@@ -38,7 +38,8 @@ class TestWebSocket:
 
         communicator = WebsocketCommunicator(
             application=application,
-            path=f'/game/?player-id={str(player.id)}'
+            # path=f'/game/?player-id={str(player.id)}'
+            path=f'/ws/socket-server/?player-id={str(player.id)}'
         )
         connected, _ = await communicator.connect()
         assert connected is True
@@ -52,7 +53,7 @@ class TestWebSocket:
 
         communicator = WebsocketCommunicator(
             application=application,
-            path=f'/game/?player-id={str(player.id)}'
+            path=f'/ws/socket-server/?player-id={str(player.id)}'
         )
         connected, _ = await communicator.connect()
 
@@ -75,7 +76,7 @@ class TestWebSocket:
 
         communicator = WebsocketCommunicator(
             application=application,
-            path=f'/game/?player-id={str(player.id)}'
+            path=f'/ws/socket-server/?player-id={str(player.id)}'
         )
         connected, _ = await communicator.connect()
 

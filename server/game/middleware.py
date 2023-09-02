@@ -18,11 +18,12 @@ class TokenAuthMiddleware:
     async def __call__(self, scope, receive, send):
         close_old_connections()
         query_string = parse_qs(scope['query_string'].decode())
-        token = query_string.get('player-id')[0]
-        if not token:
+        token_list = query_string.get('player-id')
+        if not token_list:
             scope['player'] = None
             return await self.app(scope, receive, send)
 
+        token = token_list[0]
         try:
             player = await get_player(token)
         except Exception as exception:

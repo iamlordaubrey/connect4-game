@@ -1,3 +1,4 @@
+from django.shortcuts import render
 from rest_framework import generics
 
 from game.models import Game

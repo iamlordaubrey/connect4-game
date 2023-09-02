@@ -11,6 +11,8 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
 
     @database_sync_to_async
     def _get_game_id(self, player):
+        if player is None:
+            return
         return Game.objects.filter(players__id=player.id).first()
 
     async def connect(self):
@@ -21,6 +23,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         game = await self._get_game_id(player)
         if game is None:
             await self.close()
+            return
 
         try:
             self.game_group_name = f'room_{str(game.id)}'
