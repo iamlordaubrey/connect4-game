@@ -14,6 +14,9 @@ class GameRoomSerializer(serializers.ModelSerializer):
         model = Game
         fields = '__all__'
 
+    def _get_players_count(self, obj):
+        return obj.players.all().count()
+
     def create(self, validated_data):
         player_id = self.context['player-id']
         player = Player.objects.get(id=player_id)
@@ -21,17 +24,20 @@ class GameRoomSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Player not found')
 
         game = Game.objects.annotate(players_count=Count('players')).filter(players_count=1, started=False).first()
-        if game:
-            game.started = True
-            game.save()
-            event_type = 'room.joined'
-        else:
+        # if game:
+        #     event_type = 'room.joined'
+        # else:
+        #     game = Game.objects.create()
+        #     event_type = 'room.created'
+        if not game:
             game = Game.objects.create()
-            event_type = 'room.created'
 
         game.players.add(player)
+        if self._get_players_count(game) == 2:
+            game.started = True
+            game.save()
 
-        room_name = f'room_{str(game.id)}'
+        # room_name = f'room_{str(game.id)}'
         # add_to_room_event_producer(room_name, player.id)
         # broadcast_event_producer(room_name, event_type)
 

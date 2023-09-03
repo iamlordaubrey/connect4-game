@@ -83,10 +83,10 @@ class TestJoiningGameRoomCreatesWebsocketConnection(APITransactionTestCase):
         connected, _ = await communicator.connect()
         assert connected is True
 
-        message = {
+        control_response = {
             'type': 'room.created',
             'text': 'Game room created',
         }
-        response = await communicator.receive_json_from()
-        assert response == message
+        server_response = await communicator.receive_json_from()
+        assert server_response == control_response
         await communicator.disconnect()

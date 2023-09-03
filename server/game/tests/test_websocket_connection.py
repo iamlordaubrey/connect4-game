@@ -38,7 +38,6 @@ class TestWebSocket:
 
         communicator = WebsocketCommunicator(
             application=application,
-            # path=f'/game/?player-id={str(player.id)}'
             path=f'/ws/socket-server/?player-id={str(player.id)}'
         )
         connected, _ = await communicator.connect()
@@ -57,14 +56,21 @@ class TestWebSocket:
         )
         connected, _ = await communicator.connect()
 
-        message = {
+        payload = {
             'type': 'echo.message',
-            'data': 'This is a test message.',
+            'player': str(player.id),
+            'message': 'This is a test message.',
         }
-        await communicator.send_json_to(message)  # handles the BC sent on event type room.created
+        await communicator.send_json_to(payload)  # handles the BC sent on event type room.created
 
-        response = await communicator.receive_json_from()
-        assert response == message
+        control_response = {
+            'type': 'echo.message',
+            'player': player.username,
+            'message': 'This is a test message.',
+        }
+        server_response = await communicator.receive_json_from()
+
+        assert control_response == server_response
         await communicator.disconnect()
 
     async def test_can_send_and_receive_broadcast_messages(self, settings):
@@ -80,15 +86,22 @@ class TestWebSocket:
         )
         connected, _ = await communicator.connect()
 
-        message = {
+        payload = {
             'type': 'echo.message',
-            'text': 'This is a test message.',
+            'player': str(player.id),
+            'message': 'This is a test message.',
         }
-        await communicator.send_json_to(message)  # handles the BC sent on event type room.created
+        await communicator.send_json_to(payload)  # handles the BC sent on event type room.created
 
         channel_layer = get_channel_layer()
-        await channel_layer.group_send(f'room_{str(game["id"])}', message=message)
+        await channel_layer.group_send(f'room_{str(game["id"])}', message=payload)
 
-        response = await communicator.receive_json_from()
-        assert response == message
+        control_response = {
+            'type': 'echo.message',
+            'player': player.username,
+            'message': 'This is a test message.',
+        }
+        server_response = await communicator.receive_json_from()
+
+        assert control_response == server_response
         await communicator.disconnect()
