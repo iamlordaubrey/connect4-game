@@ -3,58 +3,53 @@ import GameContext from "../utils/GameContext";
 
 interface MessageType {
   playerID: string,
-  playerName: string,
   message: string,
 }
 
 // const Chat = ({ messages, setMessages}: { messages: MessageType[], setMessages: React.Dispatch<React.SetStateAction<MessageType[]>>}) => {
-const Chat = ({ messages, setMessages}: { messages: MessageType[], setMessages: React.Dispatch<React.SetStateAction<MessageType[]>>}) => {
-  const { sendMessage } = useContext(GameContext) || {};
+const Chat3 = () => {
+  const { gameSocket, sendMessage } = useContext(GameContext) || {};
   const [userInput, setUserInput] = useState("");
-  // const [messages, setMessages] = useState<MessageType[]>([]);
+  const [messages, setMessages] = useState<MessageType[]>([]);
 
   const handleMessageSubmit = (event:React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!sendMessage) throw Error("sendMessage is not defined");
 
     sendMessage(userInput);
-    console.log(messages)
     setUserInput("");
   }
 
-  // useEffect(() => {
-  //   if (gameSocket) {
-  //     gameSocket.onmessage = (event) => {
-  //       const data = JSON.parse(event.data);
+  useEffect(() => {
+    if (gameSocket) {
+      gameSocket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
 
-  //       if (data.type === "chat.message") {
-  //         setMessages(messages => [
-  //           ...messages,
-  //           {playerID: data.player, message: data.message},
-  //         ])
-  //       }
-  //       if (data.type === "game.move") {
-  //         console.log('see problem ohhh!!!')
-  //       }
-  //     }
+        if (data.type === "chat.message") {
+          setMessages(messages => [
+            ...messages,
+            {playerID: data.player, message: data.message},
+          ])
+        }
+      }
 
-  //     return () => {
-  //       if (gameSocket) {
-  //         gameSocket.onmessage = null;
-  //       }
-  //     }
-  //   }
-  // }, [gameSocket]);
+      return () => {
+        if (gameSocket) {
+          gameSocket.onmessage = null;
+        }
+      }
+    }
+  }, [gameSocket, setMessages]);
 
   return (
     <section>
       <h2>Chat</h2>
       <div>
         { messages.map((message, index) => {
-          
+          console.log('message: ', message)
           return (
             <p key={index}>
-              {message.playerName}: {message.message}
+              {message.playerID}: {message.message}
             </p>
           )
         })}
@@ -74,4 +69,4 @@ const Chat = ({ messages, setMessages}: { messages: MessageType[], setMessages: 
   )
 }
 
-export default Chat;
+export default Chat3;

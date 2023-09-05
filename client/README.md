@@ -1,4 +1,24 @@
-# Getting Started with Create React App
+# Connect4 Frontend
+
+### Strategy
+- UI => board, cells, onClick -> move
+- Game constants
+  - players, game state (won/lost/drawn)
+- makeMove()
+- checkGameState() -> won? by whom? 
+
+
+Player One
+- plays first - update board, send new board and current player turn
+- setnewboard, set turn to false (prevent player from playing)
+- toggle current player turn
+
+
+
+Player Two
+- receives updated board
+
+<!-- # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
@@ -43,4 +63,4 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+To learn React, check out the [React documentation](https://reactjs.org/). -->
