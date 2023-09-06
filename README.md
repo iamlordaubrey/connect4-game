@@ -31,9 +31,10 @@ $ python manage.py migrate
 $ python manage.py runserver
 ```
 
-Open a two browsers (player A vs player B), play against an opponent
+Open a two browsers (player A vs player B), create a player (this creates/joins a room) and play against an opponent
 
 ### Improvements
+- Add "waiting for opponent to join room" feedback to user
 - Save the state of the board at the end of the game (for showing the finish state/replay)
 - Dockerize the application
 - Add a Makefile for simple, easier setup
