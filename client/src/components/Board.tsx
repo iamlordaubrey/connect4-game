@@ -37,44 +37,39 @@ type BoardType = PlayerValue[]
 
 // interface State {
 //   board: BoardType;
-//   playerTurn: Player
+//   playerTurn: PlayerValue;
+//   gameState: GameState | PlayerValue;
 // }
 
-
+enum GameState {
+  Ongoing = -1,
+  Draw = 0,
+  PlayerOneWin = PlayerValue.One,
+  PlayerTwoWin = PlayerValue.Two,
+}
 
 const Board = ({ 
   board, 
-  setBoard, 
-  totalRows, 
+  setBoard,
+  totalRows,
   totalColumns,
   turn,
   setTurn,
-  // playerValue,
-  // setPlayerValue,
-}: { 
+  gameState,
+  setGameState,
+  getGameState,
+}: {
   board: BoardType, 
   setBoard: React.Dispatch<React.SetStateAction<BoardType>>,
   totalRows: number,
   totalColumns: number,
   turn: Boolean,
-  setTurn: React.Dispatch<React.SetStateAction<Boolean>>
-  // playerValue: PlayerValue,
-  // setPlayerValue: React.Dispatch<React.SetStateAction<PlayerValue>>
+  setTurn: React.Dispatch<React.SetStateAction<Boolean>>,
+  gameState: GameState|PlayerValue,
+  setGameState: React.Dispatch<React.SetStateAction<GameState|PlayerValue>>,
+  getGameState: (board: BoardType) => GameState|PlayerValue,
 }) => {
-  // if (!playerValue) 
-  // { const playerValue = null
-  // }
-  // const [playerNumber, setPlayerNumber] = useState<Player>(Player.One)
-  // const [turn, setTurn] = useState(playerNumber === Player.One ? true : false);
   const { gameSocket, playerValue, sendMove } = useContext(GameContext) || {};
-
-  const togglePlayerTurn = (player: PlayerValue) => {
-    return player === PlayerValue.One ? PlayerValue.Two : PlayerValue.One
-  }
-
-  // const assignPlayerValue = (value: PlayerValue) => {
-  //   return value === PlayerValue.
-  // }
 
   const findLowestEmptyIndex = (board: BoardType, row: number) => {
     // const lowestLeftColumn = (totalRows * totalColumns) - totalColumns
@@ -120,6 +115,11 @@ const Board = ({
     if (!sendMove) throw Error("sendMove is not defined");
     sendMove(newBoard, playerValue);
 
+    // const gameState = getGameState(newBoard)
+    getGameState(newBoard)
+    setGameState(getGameState(newBoard))
+    console.log('gameState', gameState)
+
     setBoard(newBoard)
     console.log('setting turn to false... ')
     setTurn(false)
@@ -132,6 +132,8 @@ const Board = ({
 
   const handleOnClick = (event:React.MouseEvent<HTMLDivElement>, index: number) => {
     console.log('clicked index: ', index)
+
+    if (gameState !== GameState.Ongoing) return
     
     if (!turn) {
       console.log('turn is false')
@@ -156,8 +158,25 @@ const Board = ({
     })
   }
 
+  const verboseGameState = (gameState: GameState|PlayerValue) => {
+    switch(gameState) {
+      case 0:
+        return 'draw'
+      case 'playerOne':
+        return 'player 1 won, player 2 lost'
+      case 'playerTwo':
+        return 'player 2 won, player 1 lost'
+      default:
+        return 'Ongoing'
+    }
+  }
+
   return (
     <>
+      <div>
+        Hello { playerValue && `${playerValue}` }
+        <p>{`Game state: ${verboseGameState(gameState)}`}</p>
+      </div>
       <StyledBoard>
         {renderCells()}
       </StyledBoard>
