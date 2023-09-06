@@ -28,6 +28,7 @@ interface GameContextType {
   gameRoomID: string|null;
   createPlayer: (userName: string) => Promise<PlayerType>;
   joinGameRoom: (playerID: string) => Promise<void>;
+  endGame: (gameID: string, playerID: string) => Promise<void>;
   sendMessage: (message: string) => void;
   sendMove: (board: BoardType, playerValue: PlayerValue) => void;
   // JoinRoom: (roomID: string) => Promise<void>;
@@ -99,6 +100,32 @@ export const GameProvider = ({ children }: Props) => {
     }
   }
 
+  const endGame = async (gameRoomID: string, playerID: string) => {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/game/end/", { // ToDo: move url to env file
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          game_id: gameRoomID,
+          winning_player_id: playerID
+        })
+      });
+
+      if (!response.ok) {
+        throw Error(`Error from the server! Status: ${response.statusText}`);
+      }
+
+      // const player = await response.json();
+      // setPlayerID(player.id)
+      // return player
+
+    } catch (error) {
+      throw Error(`Something went wrong while adding game record: ${error}`)
+    }
+  }
+
   // const JoinRoom = async (roomID: string) => {
   //   setGameRoomID(roomID)
   //   setGameSocket(new WebSocket(`ws://localhost:8000/api/game/${roomID}/`));
@@ -135,6 +162,7 @@ export const GameProvider = ({ children }: Props) => {
     gameRoomID,
     createPlayer,
     joinGameRoom,
+    endGame,
     sendMessage,
     sendMove,
     // JoinRoom,

@@ -132,7 +132,8 @@ const Board = ({
 
   const handleOnClick = (event:React.MouseEvent<HTMLDivElement>, index: number) => {
     console.log('clicked index: ', index)
-
+    
+    // If game has ended...
     if (gameState !== GameState.Ongoing) return
     
     if (!turn) {

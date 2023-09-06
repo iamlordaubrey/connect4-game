@@ -28,7 +28,7 @@ enum GameState {
 const Game = () => {
   const totalRows = 7
   const totalColumns = 7
-  const { gameSocket, playerValue } = useContext(GameContext) || {};
+  const { gameSocket, playerValue, endGame, gameRoomID } = useContext(GameContext) || {};
 
   // const [playerValue, setPlayerValue] = useState<PlayerValue>(PlayerValue.One);
   
@@ -130,6 +130,19 @@ const Game = () => {
 
   if (!playerValue) {const playerValue = PlayerValue.None}
 
+  const verboseGameState = (gameState: GameState|PlayerValue) => {
+    switch(gameState) {
+      case 0:
+        return 'draw'
+      case 'playerOne':
+        return 
+      case 'playerTwo':
+        return 'player 2 won, player 1 lost'
+      default:
+        return 'Ongoing'
+    }
+  }
+
   useEffect(() => {
     if (gameSocket) {
       gameSocket.onmessage = (event) => {
@@ -147,7 +160,20 @@ const Game = () => {
           // if (data.type === "game.move" && data.player_turn !== playerTurn)
 
           setBoard([...data.board])
-          setGameState(getGameState([...data.board]))
+          const currentGameState = getGameState([...data.board])
+          setGameState(currentGameState)
+
+          if (currentGameState !== GameState.Ongoing) {
+            let winner = null
+            if (currentGameState === GameState.Draw) {
+              winner = 'draw'
+            } else {
+              winner = data.player_id
+            }
+
+            if (!endGame || !gameRoomID) return
+            endGame(gameRoomID, winner)
+          }
           // if (data && data.playerValue) {
           //   setPlayerValue(togglePlayerTurn(data.playerValue))
           // }
