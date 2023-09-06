@@ -11,10 +11,7 @@ class Game(models.Model):
     players = models.ManyToManyField('player.Player')
     player_one = models.ForeignKey('player.Player', on_delete=models.SET_NULL, blank=True, null=True, related_name='player_one')
     player_two = models.ForeignKey('player.Player', on_delete=models.SET_NULL, blank=True, null=True, related_name='player_two')
-
     started = models.BooleanField(default=False)
-    # ended = models.BooleanField(default=False)
-    # winner = models.ForeignKey('player.Player', on_delete=models.SET_NULL, blank=True, null=True, related_name='winner')
 
 
 class GameHistory(models.Model):
@@ -26,8 +23,3 @@ class GameHistory(models.Model):
     player_one_id = models.CharField(max_length=200)
     player_two_id = models.CharField(max_length=200)
     winning_player_id = models.CharField(max_length=200)
-    # game = models.ForeignKey('Game', on_delete=models.SET_NULL, blank=True, null=True, related_name='game')
-    # player_one = models.ForeignKey('player.Player', on_delete=models.SET_NULL, blank=True, null=True, related_name='player_one')
-    # player_two = models.ForeignKey('player.Player', on_delete=models.SET_NULL, blank=True, null=True, related_name='player_two')
-    # winner = models.ForeignKey('player.Player', on_delete=models.SET_NULL, blank=True, null=True)
-

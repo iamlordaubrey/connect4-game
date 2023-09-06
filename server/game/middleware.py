@@ -37,7 +37,6 @@ class TokenAuthMiddleware:
             player = await get_player(token)
             game = await get_game(game)
         except Exception as exception:
-            print('An error occurred: ', exception)
             scope['player'] = None
             scope['game'] = None
             return await self.app(scope, receive, send)

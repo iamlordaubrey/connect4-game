@@ -17,7 +17,6 @@ TEST_CHANNEL_LAYERS = {
 
 
 @database_sync_to_async
-# @pytest.mark.django_db(transaction=True)
 def create_player(username):
     return Player.objects.create(username=username)
 
@@ -61,7 +60,7 @@ class TestWebSocket:
             'player': str(player.id),
             'message': 'This is a test message.',
         }
-        await communicator.send_json_to(payload)  # handles the BC sent on event type room.created
+        await communicator.send_json_to(payload)  # handles the broadcast message sent on event type room.created
 
         control_response = {
             'type': 'echo.message',
@@ -91,7 +90,7 @@ class TestWebSocket:
             'player': str(player.id),
             'message': 'This is a test message.',
         }
-        await communicator.send_json_to(payload)  # handles the BC sent on event type room.created
+        await communicator.send_json_to(payload)  # handles the broadcast message sent on event type room.created
 
         channel_layer = get_channel_layer()
         await channel_layer.group_send(f'room_{str(game["id"])}', message=payload)
