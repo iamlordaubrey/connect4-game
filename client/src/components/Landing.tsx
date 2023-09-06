@@ -5,10 +5,8 @@ import GameContext from "../utils/GameContext";
 
 const Landing = () => {
   const { createPlayer, joinGameRoom } = useContext(GameContext) || {};
-
   const [userName, setUserName] = useState("")
   const [playerCreated, setPlayerCreated] = useState(false);
-
   const navigate = useNavigate();
 
   const handleStartGame = (event:React.FormEvent<HTMLFormElement>) => {

@@ -1,38 +1,5 @@
-import { ReactNode, createContext, useState } from "react";
-
-interface Props {
-  children?: ReactNode;
-}
-
-interface PlayerType {
-  status?: string;
-  id: string;
-  username: string;
-  wins: number;
-  losses: number;
-}
-
-enum PlayerValue {
-  None = 'playerNone',
-  One = 'playerOne',
-  Two = 'playerTwo'
-}
-
-type BoardType = PlayerValue[]
-
-interface GameContextType {
-  gameSocket: WebSocket|null;
-  playerID: string|null;
-  playerValue: PlayerValue;
-  // setPlayerValue: (playerValue: PlayerValue) => void;
-  gameRoomID: string|null;
-  createPlayer: (userName: string) => Promise<PlayerType>;
-  joinGameRoom: (playerID: string) => Promise<void>;
-  endGame: (gameID: string, playerID: string) => Promise<void>;
-  sendMessage: (message: string) => void;
-  sendMove: (board: BoardType, playerValue: PlayerValue) => void;
-  // JoinRoom: (roomID: string) => Promise<void>;
-}
+import { createContext, useState } from "react";
+import { GameContextType, Props, PlayerValue, BoardType } from "./types";
 
 const GameContext = createContext<GameContextType|null>(null);
 export default GameContext;
@@ -41,7 +8,6 @@ export const GameProvider = ({ children }: Props) => {
   const [gameSocket, setGameSocket] = useState<WebSocket|null>(null);
   const [playerID, setPlayerID] = useState<string|null>(null);
   const [playerValue, setPlayerValue] = useState<PlayerValue>(PlayerValue.None);
-  
   const [gameRoomID, setGameRoomID] = useState<string|null>(null);
 
   const createPlayer = async (playerName: string) => {
@@ -62,6 +28,7 @@ export const GameProvider = ({ children }: Props) => {
 
       const player = await response.json();
       setPlayerID(player.id)
+
       return player
 
     } catch (error) {
@@ -86,11 +53,10 @@ export const GameProvider = ({ children }: Props) => {
 
       const gameRoom = await response.json();
       setGameRoomID(gameRoom.id);
-      console.log('game room: ', gameRoom)
+
       const pv = (gameRoom.player_two ? PlayerValue.Two : PlayerValue.One)
       setPlayerValue(pv)
-      console.log('game room id in game context: ', gameRoom.id)
-      console.log('player value: ', pv)
+
       setGameSocket(new WebSocket(`ws://127.0.0.1:8000/ws/socket-server/?player-id=${playerID}&game-id=${gameRoom.id}`))
 
       return gameRoom;
@@ -117,19 +83,10 @@ export const GameProvider = ({ children }: Props) => {
         throw Error(`Error from the server! Status: ${response.statusText}`);
       }
 
-      // const player = await response.json();
-      // setPlayerID(player.id)
-      // return player
-
     } catch (error) {
-      throw Error(`Something went wrong while adding game record: ${error}`)
+      throw Error(`Something went wrong while creating game log: ${error}`)
     }
   }
-
-  // const JoinRoom = async (roomID: string) => {
-  //   setGameRoomID(roomID)
-  //   setGameSocket(new WebSocket(`ws://localhost:8000/api/game/${roomID}/`));
-  // };
 
   const sendMessage = (message: string) => {
     if (gameSocket) {
@@ -158,14 +115,12 @@ export const GameProvider = ({ children }: Props) => {
     gameSocket,
     playerID,
     playerValue,
-    // setPlayerValue,
     gameRoomID,
     createPlayer,
     joinGameRoom,
     endGame,
     sendMessage,
     sendMove,
-    // JoinRoom,
   };
 
   return (

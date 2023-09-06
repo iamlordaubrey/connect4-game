@@ -2,47 +2,19 @@ import { useContext, useState, useEffect } from "react";
 import Board from "./Board";
 import Chat from "./Chat";
 import GameContext from "../utils/GameContext";
-
-interface MessageType {
-  playerID: string,
-  playerName: string,
-  message: string,
-}
-
-enum PlayerValue {
-  None = 'playerNone',
-  One = 'playerOne',
-  Two = 'playerTwo'
-}
-
-type BoardType = PlayerValue[]
-
-enum GameState {
-  Ongoing = -1,
-  Draw = 0,
-  PlayerOneWin = PlayerValue.One,
-  PlayerTwoWin = PlayerValue.Two,
-}
-
+import { BoardType, GameState, MessageType, PlayerValue } from "../utils/types";
 
 const Game = () => {
   const totalRows = 7
   const totalColumns = 7
-  const { gameSocket, playerValue, endGame, gameRoomID } = useContext(GameContext) || {};
 
-  // const [playerValue, setPlayerValue] = useState<PlayerValue>(PlayerValue.One);
-  
+  const { gameSocket, playerValue, endGame, gameRoomID } = useContext(GameContext) || {};
   const [messages, setMessages] = useState<MessageType[]>([])
   const [board, setBoard] = useState<BoardType>([...Array(totalRows * totalColumns).keys()].map(i => PlayerValue.None));
-  const [turn, setTurn] = useState<Boolean>(playerValue === "playerOne" ? true : false);
+  const [turn, setTurn] = useState<Boolean>(playerValue === PlayerValue.One ? true : false);
   const [gameState, setGameState] = useState<GameState|PlayerValue>(GameState.Ongoing)
 
-
-  // const togglePlayerTurn = (playerValue: PlayerValue) => {
-  //   return playerValue === PlayerValue.One ? PlayerValue.Two : PlayerValue.One
-  // }
   const checkWinningSlice = (boardSlice: PlayerValue[]) => {
-    console.log('in checkwinningslice')
     if (boardSlice.some(cell => cell === PlayerValue.None)) return false;
 
     if (
@@ -50,11 +22,9 @@ const Game = () => {
       boardSlice[1] === boardSlice[2] &&
       boardSlice[2] === boardSlice[3]
     ) {
-      console.log('bs', boardSlice)
       return boardSlice[0]
     }
 
-    console.log('false')
     return false
   }
 
@@ -63,9 +33,7 @@ const Game = () => {
     for (let row = 0; row < totalRows; row++) {
       for (let column = 0; column <= 4; column++) {
         const index = row * totalColumns + column;
-        console.log('r,c', `${row},${column}`, 'idx', index)
         const boardSlice = currentBoard.slice(index, index + 4)
-        console.log('board slice: ', boardSlice)
 
         const winningResult = checkWinningSlice(boardSlice);
         if (winningResult !== false) return winningResult;
@@ -128,21 +96,6 @@ const Game = () => {
     }
   };
 
-  if (!playerValue) {const playerValue = PlayerValue.None}
-
-  const verboseGameState = (gameState: GameState|PlayerValue) => {
-    switch(gameState) {
-      case 0:
-        return 'draw'
-      case 'playerOne':
-        return 
-      case 'playerTwo':
-        return 'player 2 won, player 1 lost'
-      default:
-        return 'Ongoing'
-    }
-  }
-
   useEffect(() => {
     if (gameSocket) {
       gameSocket.onmessage = (event) => {
@@ -151,15 +104,17 @@ const Game = () => {
         if (data.type === "chat.message") {
           setMessages(messages => [
             ...messages,
-            {playerID: data.player_id, playerName: data.player_name, message: data.message},
+            {
+              playerID: data.player_id, 
+              playerName: data.player_name, 
+              message: data.message
+            },
           ])
         }
-        console.log('player numberss: ', data.player_value, playerValue)
-        if (data.type === "game.move" && data.player_value !== playerValue) {
-          console.log('updating!!!')
-          // if (data.type === "game.move" && data.player_turn !== playerTurn)
 
+        if (data.type === "game.move" && data.player_value !== playerValue) {
           setBoard([...data.board])
+
           const currentGameState = getGameState([...data.board])
           setGameState(currentGameState)
 
@@ -174,14 +129,9 @@ const Game = () => {
             if (!endGame || !gameRoomID) return
             endGame(gameRoomID, winner)
           }
-          // if (data && data.playerValue) {
-          //   setPlayerValue(togglePlayerTurn(data.playerValue))
-          // }
-          // if (setPlayerValue) togglePlayerTurn(data.playerValue)
-          console.log('setting turn to true... ')
+          
           setTurn(true);
         } else {
-
           console.log('move received, but doing nothing')
         }
       }
@@ -193,24 +143,21 @@ const Game = () => {
       }
     }
   }, [gameSocket]);
+
   return (
     <section>
       <Board 
         board={board}
         setBoard={setBoard}
-        totalRows={totalRows}
         totalColumns={totalColumns}
         turn={turn}
         setTurn={setTurn}
         gameState={gameState}
         setGameState={setGameState}
         getGameState={getGameState}
-        // playerValue={playerValue}
-        // setPlayerValue={setPlayerValue}
       />
       <Chat 
         messages={messages}
-        setMessages={setMessages}
       />
     </section>
   )
