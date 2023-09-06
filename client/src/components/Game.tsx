@@ -131,8 +131,6 @@ const Game = () => {
           }
           
           setTurn(true);
-        } else {
-          console.log('move received, but doing nothing')
         }
       }
 
@@ -142,7 +140,7 @@ const Game = () => {
         }
       }
     }
-  }, [gameSocket]);
+  });
 
   return (
     <section>
