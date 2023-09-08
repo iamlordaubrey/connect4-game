@@ -38,6 +38,7 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_HEADERS = [
     'player-id',
     'content-type',
+    'robot-mode',
 ]
 
 

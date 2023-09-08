@@ -19,6 +19,8 @@ class GameRoomSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         player_id = self.context['player-id']
+        robot_mode = self.context['robot-mode']
+
         player = Player.objects.get(id=player_id)
         if not player:
             raise serializers.ValidationError('Player not found')
@@ -35,6 +37,11 @@ class GameRoomSerializer(serializers.ModelSerializer):
 
         game.players.add(player)
         if self._get_players_count(game) == 2:
+            game.started = True
+            game.save()
+
+        # start the game
+        if robot_mode == 'enabled':
             game.started = True
             game.save()
 

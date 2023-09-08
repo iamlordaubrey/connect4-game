@@ -10,7 +10,10 @@ class JoinRoomView(generics.CreateAPIView):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context.update({'player-id': self.request.headers.get('player-id')})
+        context.update({
+            'player-id': self.request.headers.get('player-id'),
+            'robot-mode': self.request.headers.get('robot-mode'),
+        })
         return context
 
 
