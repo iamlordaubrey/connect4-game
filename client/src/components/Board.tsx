@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { styled } from "styled-components";
 
 import GameContext from "../utils/GameContext";
@@ -31,6 +31,7 @@ margin: 7px;
 const Board = ({ 
   board, 
   setBoard,
+  totalRows,
   totalColumns,
   turn,
   setTurn,
@@ -40,6 +41,7 @@ const Board = ({
 }: {
   board: BoardType, 
   setBoard: React.Dispatch<React.SetStateAction<BoardType>>,
+  totalRows: number,
   totalColumns: number,
   turn: Boolean,
   setTurn: React.Dispatch<React.SetStateAction<Boolean>>,
@@ -47,7 +49,8 @@ const Board = ({
   setGameState: React.Dispatch<React.SetStateAction<GameState|PlayerValue>>,
   getGameState: (board: BoardType) => GameState|PlayerValue,
 }) => {
-  const { playerValue, sendMove } = useContext(GameContext) || {};
+  const { playerValue, sendMove, isRobotMode, setPlayerValue } = useContext(GameContext) || {};
+  const [robotsPick, setRobotsPick] = useState<number>(-2)
 
   const findLowestEmptyIndex = (board: BoardType, row: number) => {
     const lowestIndexOnRow = totalColumns * row
@@ -80,8 +83,42 @@ const Board = ({
     setGameState(getGameState(newBoard))
 
     setBoard(newBoard)
-    setTurn(false)
+
+    if (isRobotMode) {
+      if (!setPlayerValue) throw Error("Player value not defined")
+
+      if (turn === true) {
+        // It's human turn
+        setPlayerValue(PlayerValue.Two)
+      } else {
+        setPlayerValue(PlayerValue.One)
+      }
+      setTurn(!turn)
+    } else {
+      setTurn(false)
+    }
   }
+
+  useEffect(() => {
+    if (isRobotMode && !turn) {
+      // It's robots turn, robot plays
+      const lastCellIndex = (totalRows * totalColumns) - 1
+      
+      // Checks that robot doesn't pick an already occupied cell
+      let index = -1
+      let row = -1
+
+      while (index === -1 ) {
+        let robotIndexChoice = Math.random() * (0-lastCellIndex) + lastCellIndex
+        row = ~~(robotIndexChoice / totalColumns)  // Floors the result
+
+        index = findLowestEmptyIndex(board, row)
+      }
+      
+      setRobotsPick(row)
+      makeMove(row)
+    }
+  });
 
   const handleOnClick = (event: React.MouseEvent<HTMLDivElement>, index: number) => {
     if (gameState !== GameState.Ongoing) return

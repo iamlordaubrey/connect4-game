@@ -4,10 +4,16 @@ import { useNavigate } from "react-router-dom";
 import GameContext from "../utils/GameContext";
 
 const Landing = () => {
-  const { createPlayer, joinGameRoom } = useContext(GameContext) || {};
+  const { createPlayer, joinGameRoom, isRobotMode, setisRobotMode } = useContext(GameContext) || {};
   const [userName, setUserName] = useState("")
+  
   const [playerCreated, setPlayerCreated] = useState(false);
   const navigate = useNavigate();
+  
+  const handleCheckbox = () => {
+    if (!setisRobotMode) return;
+    setisRobotMode(!isRobotMode)
+  }
 
   const handleStartGame = (event:React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -15,9 +21,11 @@ const Landing = () => {
     
     createPlayer(userName).then(player => {
       setPlayerCreated(true)
+      
       if (!joinGameRoom) throw Error("joinGameRoom is not defined");
+      if (isRobotMode === undefined) throw Error("robotMode is not defined");
 
-      joinGameRoom(player.id).then(gameRoom => {
+      joinGameRoom(player.id, isRobotMode).then(gameRoom => {
         navigate('/game')
       })
     })
@@ -45,6 +53,15 @@ const Landing = () => {
               >
                 <div className="rounded-md shadow-sm -space-y-px">
                   <div>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={isRobotMode}
+                        onChange={handleCheckbox}
+                      />
+                      Robot Mode
+                    </label>
+                    
                     <input
                       id="user-name"
                       name="userName"
