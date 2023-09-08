@@ -8,11 +8,11 @@ const Game = () => {
   const totalRows = 7
   const totalColumns = 7
 
-  const { gameSocket, playerValue, endGame, gameRoomID } = useContext(GameContext) || {};
-  const [messages, setMessages] = useState<MessageType[]>([])
+  const { gameSocket, playerValue, endGame, gameRoomID, isRobotMode } = useContext(GameContext) || {};
+  const [messages, setMessages] = useState<MessageType[]>([]);
   const [board, setBoard] = useState<BoardType>([...Array(totalRows * totalColumns).keys()].map(i => PlayerValue.None));
   const [turn, setTurn] = useState<Boolean>(playerValue === PlayerValue.One ? true : false);
-  const [gameState, setGameState] = useState<GameState|PlayerValue>(GameState.Ongoing)
+  const [gameState, setGameState] = useState<GameState|PlayerValue>(GameState.Ongoing);
 
   const checkWinningSlice = (boardSlice: PlayerValue[]) => {
     if (boardSlice.some(cell => cell === PlayerValue.None)) return false;
@@ -147,6 +147,7 @@ const Game = () => {
       <Board 
         board={board}
         setBoard={setBoard}
+        totalRows={totalRows}
         totalColumns={totalColumns}
         turn={turn}
         setTurn={setTurn}
@@ -154,9 +155,12 @@ const Game = () => {
         setGameState={setGameState}
         getGameState={getGameState}
       />
+      {
+      !isRobotMode && 
       <Chat 
         messages={messages}
       />
+      }
     </section>
   )
 }

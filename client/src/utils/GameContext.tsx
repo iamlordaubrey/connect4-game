@@ -9,6 +9,7 @@ export const GameProvider = ({ children }: Props) => {
   const [playerID, setPlayerID] = useState<string|null>(null);
   const [playerValue, setPlayerValue] = useState<PlayerValue>(PlayerValue.None);
   const [gameRoomID, setGameRoomID] = useState<string|null>(null);
+  const [isRobotMode, setisRobotMode] = useState<boolean>(false);
 
   const createPlayer = async (playerName: string) => {
     try {
@@ -36,10 +37,13 @@ export const GameProvider = ({ children }: Props) => {
     }
   }
 
-  const joinGameRoom = async (playerID: string) => {
+  const joinGameRoom = async (playerID: string, isRobotMode: boolean) => {
+    const robotMode = isRobotMode ? "enabled" : "disabled"
+
     const requestHeaders: HeadersInit = new Headers();
     requestHeaders.set("Content-Type", "application/json")
     requestHeaders.set("player-id", playerID)
+    requestHeaders.set("robot-mode", robotMode)
 
     try {
       const response = await fetch("http://127.0.0.1:8000/api/game/join/", {
@@ -54,8 +58,14 @@ export const GameProvider = ({ children }: Props) => {
       const gameRoom = await response.json();
       setGameRoomID(gameRoom.id);
 
-      const pv = (gameRoom.player_two ? PlayerValue.Two : PlayerValue.One)
-      setPlayerValue(pv)
+      const playerValue = (gameRoom.player_two ? PlayerValue.Two : PlayerValue.One)
+      setPlayerValue(playerValue)
+      
+      if (isRobotMode) {
+        // There's no need to use a websocket when playing against robot
+        // Avoiding creating websocket connection
+        return gameRoom
+      }
 
       setGameSocket(new WebSocket(`ws://127.0.0.1:8000/ws/socket-server/?player-id=${playerID}&game-id=${gameRoom.id}`))
 
@@ -121,6 +131,10 @@ export const GameProvider = ({ children }: Props) => {
     endGame,
     sendMessage,
     sendMove,
+    
+    isRobotMode,
+    setisRobotMode,
+    setPlayerValue,
   };
 
   return (

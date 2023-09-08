@@ -40,9 +40,12 @@ export interface GameContextType {
   // setPlayerValue: (playerValue: PlayerValue) => void;
   gameRoomID: string|null;
   createPlayer: (userName: string) => Promise<PlayerType>;
-  joinGameRoom: (playerID: string) => Promise<void>;
+  joinGameRoom: (playerID: string, robotMode: boolean) => Promise<void>;
   endGame: (gameID: string, playerID: string) => Promise<void>;
   sendMessage: (message: string) => void;
   sendMove: (board: BoardType, playerValue: PlayerValue) => void;
-  // JoinRoom: (roomID: string) => Promise<void>;
+
+  isRobotMode: boolean;
+  setisRobotMode: (robot: React.SetStateAction<boolean>) => void;
+  setPlayerValue: (playerValue: PlayerValue) => void;
 }
